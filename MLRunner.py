@@ -225,25 +225,25 @@ runs = [2 ** i for i in range(12, 18)]
 
 '''
 
-'''
+#'''
 #log run range (2^18 - 2^20)
-runs = [2 ** i for i in range(6, 10)]
-multiRun(runs[2:], SVC(kernel="linear", C=1.0, degree = 3, gamma = "scale"), "linear,1.0,3,scale", 1, "compressed")
-multiRun(runs, SVC(kernel="rbf", C=1.0, degree = 3, gamma = "scale"), "rbf,1.0,3,scale", 1, "compressed")
-multiRun(runs, SVC(kernel="sigmoid", C=1.0, degree = 3, gamma = "scale"), "sigmoid,1.0,3,scale", 1, "compressed")
-multiRun(runs, SVC(kernel="poly", C=1.0, degree = 3, gamma = "scale"), "poly,1.0,3,scale", 1, "compressed")
-
 runs = [2 ** i for i in range(18, 20)]
-multiRun(runs, DecisionTreeClassifier(criterion="gini", splitter="best"), "gini,best", 1, "compressed")
+multiRun(runs[1:], DecisionTreeClassifier(criterion="gini", splitter="best"), "gini,best", 1, "compressed")
 multiRun(runs, DecisionTreeClassifier(criterion="entropy", splitter="best"), "entropy,best", 1, "compressed")
 multiRun(runs, DecisionTreeClassifier(criterion="log_loss", splitter="best"), "log_loss,best", 1, "compressed")
 
 multiRun(runs, DecisionTreeClassifier(criterion="gini", splitter="random"), "gini,random", 1, "compressed")
 multiRun(runs, DecisionTreeClassifier(criterion="entropy", splitter="random"), "entropy,random", 1, "compressed")
 multiRun(runs, DecisionTreeClassifier(criterion="log_loss", splitter="random"), "log_loss,random", 1, "compressed")
-'''
 
-'''
+runs = [2 ** i for i in range(6, 10)]
+multiRun(runs[2:], SVC(kernel="linear", C=1.0, degree = 3, gamma = "scale"), "linear,1.0,3,scale", 1, "compressed")
+multiRun(runs, SVC(kernel="rbf", C=1.0, degree = 3, gamma = "scale"), "rbf,1.0,3,scale", 1, "compressed")
+multiRun(runs, SVC(kernel="sigmoid", C=1.0, degree = 3, gamma = "scale"), "sigmoid,1.0,3,scale", 1, "compressed")
+multiRun(runs, SVC(kernel="poly", C=1.0, degree = 3, gamma = "scale"), "poly,1.0,3,scale", 1, "compressed")
+#'''
+
+#'''
 #exceptions / long run time sets
 
 #estimated 20hrs per
@@ -258,22 +258,4 @@ multiRun(runs[1:], SVC(kernel="linear", C=1.0, degree = 3, gamma = "scale"), "li
 multiRun(runs, SVC(kernel="rbf", C=1.0, degree = 3, gamma = "scale"), "rbf,1.0,3,scale", 1, "compressed")
 multiRun(runs, SVC(kernel="sigmoid", C=1.0, degree = 3, gamma = "scale"), "sigmoid,1.0,3,scale", 1, "compressed")
 multiRun(runs, SVC(kernel="poly", C=1.0, degree = 3, gamma = "scale"), "poly,1.0,3,scale", 1, "compressed")
-'''
-
-
-#Decision Tree - gini,best:
-#	abc-lor:
-#    0.72, 1_000 per letter
-#    0.94, 10_000 per letter
-#	all:
-#    0.47 at all, 1_000 per letter
-#    0.78 at all, 10_000 per letter
-
-#Random Forest all-100,gini uses ~25GB Ram for 4096:1 TD:L
-
-#SVC - linear, 1.0
-#	abc-lor:
-#    0.86 at abc-lor, 1_000 per letter
-#    0.95 at abc-lor, 10_000 per letter
-#	all:
-#    0.79 at all, 10_000 per letter.
+#'''
