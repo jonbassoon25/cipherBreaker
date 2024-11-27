@@ -105,7 +105,7 @@ def plotAnalysis(analysis):
 numTests = 5000 #number of times each character is tested for accuracy
 trainingType = "uncompressed"
 #charClassifier = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-2.pkl")
+charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 
 analysis = analyze(charClassifier, trainingType, numTests)
 plotAnalysis(analysis)

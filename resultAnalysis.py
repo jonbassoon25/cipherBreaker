@@ -206,11 +206,11 @@ def compareClassifiers(classifierNames = [], compare = "score", dataType = "all"
 
 		
 
-compareClassifierParameters("DecisionTreeClassifier", ["compressed"], "score", "all")
+#compareClassifierParameters("DecisionTreeClassifier", [], "score", "all")
 #compareClassifierParameters("GaussianNB", [], "score", "all")
 #compareClassifierParameters("KNeighborsClassifier", ["distance"], "score", "all")
 #compareClassifierParameters("NearestCentroid", [], "score", "all")
 #compareClassifierParameters("RandomForestClassifier", [], "score", "all")
-#compareClassifierParameters("SVC", [], "score", "all")
+#compareClassifierParameters("SVC", [], "time", "all")
 
 #compareClassifiers(["DecisionTreeClassifier-entropy,random", "SVC-linear,1.0,3,scale"], "score", "all", "compressed")
