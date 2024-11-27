@@ -54,7 +54,7 @@ def decryptUserMessages(charClassifier, trainingType):
 		while messageToEncrypt == "":
 			messageToEncrypt = input("Enter a message to encrypt:\n\t")
 		
-		result = encryptAndBreak(messageToEncrypt)
+		result = encryptAndBreak(charClassifier, messageToEncrypt, trainingType)
 
 		print("Decrypted Message:\n\t" + result)
 		print("Decryption Score: " + str(score(messageToEncrypt, result)))
