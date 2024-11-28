@@ -22,27 +22,28 @@ def score(actual, result):
 
 def breakCipher(clf, encryptedMessage, type):
 	#get each character of the encrypted message on its own
-		encryptedChars = []
-		i = 0
-		while i < len(encryptedMessage):
-			if encryptedMessage[i] == " ":
-				encryptedChars.append(encryptedMessage[i:i+3])
-				i += 2
-			else:
-				encryptedChars.append(encryptedMessage[i])
-			i += 1
+	encryptedChars = []
+	i = 0
+	while i < len(encryptedMessage):
+		if encryptedMessage[i] == " ":
+			encryptedChars.append(encryptedMessage[i:i+3])
+			i += 2
+		else:
+			encryptedChars.append(encryptedMessage[i])
+		i += 1
 
-		encryptedChars = np.array(["".join(encryptedChars[i:i+12]) for i in range(0, len(encryptedChars), 12)])
+	encryptedChars = np.array(["".join(encryptedChars[i:i+12]) for i in range(0, len(encryptedChars), 12)])
+	
+	#format data for ml, match to training data format
+	if type == "uncompressed":
+		encryptedChars = formatAsNumbers(encryptedChars)
+		print("Encrypted Message:\n\t" + "".join([str(thing) for thing in encryptedChars.ravel()]) + "\n")
+	elif type == "compressed":
+		encryptedChars = formatAsCompressed(np.array([encryptedChars]))[0]
+		print("Encrypted Message:\n\t" + encryptedMessage)
 		
-		#format data for ml, match to training data format
-		if type == "uncompressed":
-			encryptedChars = formatAsNumbers(encryptedChars)
-			print("Encrypted Message:\n\t" + "".join([str(thing) for thing in encryptedChars.ravel()]) + "\n")
-		elif type == "compressed":
-			encryptedChars = formatAsCompressed(np.array([encryptedChars]))[0]
-			print("Encrypted Message:\n\t" + encryptedMessage)
-
-		result = "".join(clf.predict(encryptedChars))
+	result = "".join(clf.predict(encryptedChars))
+	return result
 
 def encryptAndBreak(clf, message, type):
 	encryptedMessage = cipher.to_cipher(message)
@@ -61,8 +62,8 @@ def decryptUserMessages(charClassifier, trainingType):
 		print("\n")
 
 '''
-trainingType = "compressed"
-charClassifier = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-#charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
+trainingType = "uncompressed"
+#charClassifier = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
+charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 decryptUserMessages(charClassifier, trainingType)
 '''

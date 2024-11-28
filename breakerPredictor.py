@@ -63,13 +63,13 @@ def determineSFProbability(clfAnalysis, predictedChar, testChar):
 	
 	return round(freq1 / (freq2 + freq3), 4)
 	
-def determineWordProbability(clfAnalysis, predictedWord, testWord):
-	if not len(predictedWord) == len(testWord):
-		raise Exception("Length of predicted word and test word do not match.")
+def determineStringProbability(clfAnalysis, predictedString, testString):
+	if not len(predictedString) == len(testString):
+		raise Exception("Length of predicted string and test string do not match.")
 	
 	probability = 1 #probability that the testWord is the correct word
-	for i in range(len(predictedWord)):
-		probability *= determineSFProbability(clfAnalysis, predictedWord[i], testWord[i]) #series of and = series of multiplication
+	for i in range(len(predictedString)):
+		probability *= determineSFProbability(clfAnalysis, predictedString[i], testString[i]) #series of and = series of multiplication
 		
 		if probability == 0.0: #if the probability is 0, then stop
 			break
@@ -78,7 +78,7 @@ def determineWordProbability(clfAnalysis, predictedWord, testWord):
 
 
 
-def predict(clf, outputMessage, trainingType, cutoff = 0.6):
+def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOutput = -1):
 	'''
 	Predicts mistranslations of the given output message from a clf
 
@@ -87,10 +87,16 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.6):
 		outputMessage (str): predicted message returned by the classifier
 		trainingType (str): type of data that the classifier was trained on (uncompressed or compressed)
 		cutoff (float): minimum confidence of words that will be displayed in predictions
+		minOutput (int): minimum number of predicted messages to output, overrides probability cutoff
+		maxOutput (int): maximum number of predicted messages to output, overrides probability cutoff (ignored if -1)
 	
 	Returns:
 		(dict): predicted words for ranges of characters in the output message
 	'''
+	if minOutput > maxOutput and not maxOutput == -1:
+		raise Warning(f"Maximum output of {maxOutput} less than minimum output of {minOutput}. Setting maximum output to minimum output.")
+		maxOutput = minOutput
+	
 	print("Analyzing Model...")
 	analysis = modelAnalyzer.analyze(clf, trainingType, 5000, 0.0)
 
@@ -167,24 +173,95 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.6):
 			if not len(subchunk) in wordDict.keys():
 				continue #no words of length subchunk
 			for word in wordDict[len(subchunk)]:
-				wordProbability = determineWordProbability(analysis, subchunk, word)
+				wordProbability = determineStringProbability(analysis, subchunk, word)
 				if wordProbability > 0.0: #word is possible
-					print(word, wordProbability)
-					chunkRange = f"{i}-{i + possibleIndex}"
+					#print(word, wordProbability)
 					#assign word to a range in possible words
-					if not chunkRange in possibleWords:
-						possibleWords[chunkRange] = [word, wordProbability]
+					if not i in possibleWords:
+						possibleWords[i] = [str(word)]
 					else:
-						possibleWords[chunkRange].append([word, wordProbability])
+						possibleWords[i].append(str(word))
 			#find next subchunk by continuing loop
 		#remove first subchunk from next iteration
-		print(possibleSpaceIndicies)
 		i += possibleSpaceIndicies[-1] + 1
 	
-	print(possibleWords)
+	#each word of the output message is also a possible word (broken apart by spaces)
+	splitMessage = outputMessage.split(" ")
+	curLen = 0
+	for i in range(len(splitMessage)):
+		word = splitMessage[i]
 
+		if not curLen in possibleWords:
+			possibleWords[curLen] = [word]
+		elif not word in possibleWords[curLen]: #don't add the word if it is already in the possible words
+			possibleWords[curLen].append(word)
+		curLen += len(word) + 1
 
+	print("Determining Possible Messages...")
 	
+	possibleMessages = [possibleWords[0][i] + " " for i in range(len(possibleWords[0]))] #possible messages always start from beginning (index 0)
+	addingWords = True
+	while addingWords:
+		#add to the end of each possible message if able to
+		oldPossibleMessages = possibleMessages[:]
+		possibleMessages = []
+		for i in range(len(oldPossibleMessages)):
+			if not len(oldPossibleMessages[i]) in possibleWords.keys(): #no new words for this message
+				possibleMessages.append(oldPossibleMessages[i])
+				addingWords = False
+				continue
+			#there are new words for this message
+			addingWords = True
+			newWords = possibleWords[len(oldPossibleMessages[i])]
+			for j in range(len(newWords)):
+				possibleMessages.append(oldPossibleMessages[i] + newWords[j] + " ") #add a new message ending with a new word and space
+	
+	#remove space from end of all possible messages
+	possibleMessages = [message[:-1] for message in possibleMessages]
+
+	#score possible messages
+	possibleMessageScores = [determineStringProbability(analysis, possibleMessages[i], outputMessage) for i in range(len(possibleMessages))]
+
+	print(possibleMessageScores)
+
+	#sort scores and messages from highest to lowest
+	idx = [i for i in range(len(possibleMessages))]
+	for i in range(len(possibleMessageScores)):
+		inserted = False
+		for j in range(len(idx)):
+			if idx[j] == i:
+				inserted = True
+				break #in the right spot if less than everything above it
+			if possibleMessageScores[i] > possibleMessageScores[idx[j]]:
+				idx.remove(i)
+				idx.insert(j, i)
+				inserted = True
+				break
+		if not inserted:
+			idx.remove(i)
+			idx.append(i)
+
+	possibleMessages = np.array(possibleMessages)[idx]
+	possibleMessageScores = np.array(possibleMessageScores)[idx]
+
+	#filter scores less than the cutoff
+	for i in range(len(possibleMessageScores) - 1, -1, -1):
+		if len(possibleMessageScores) <= minOutput: #don't remove values if it would put us below the minimum output
+			break
+		if possibleMessageScores[i] < cutoff:
+			possibleMessageScores = np.delete(possibleMessageScores, i)
+			possibleMessages = np.delete(possibleMessages, i)
+	
+	#remove scores if there are more possible messages than the maximum allowed ouput. lower scores go first
+	for i in range(len(possibleMessageScores) - 1, -1, -1):
+		if len(possibleMessageScores) <= maxOutput or maxOutput == -1: #don't remove values if we are below or at the maximum output
+			break
+		possibleMessageScores = np.delete(possibleMessageScores, i)
+		possibleMessages = np.delete(possibleMessages, i)
+
+	return possibleMessages, possibleMessageScores
+
+
 
 
 
@@ -192,10 +269,12 @@ def predictUserInput():
 	pass
 
 trainingType = "uncompressed"
+print("Loading Model...")
 clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 
 #analysis = modelAnalyzer.analyze(clf, trainingType, 5000)
 
 #print(determineSFProbability(analysis, "a", "a"))
 
-predict(clf, "my hovercraft is full of eels", trainingType, cutoff = 0.6)
+#print(predict(clf, "my hovercrNft is full of eels", trainingType, 0.4, 2, -1))
+print(predict(clf, "aNsh equilibrium is Nmazing", trainingType, cutoff = 0.0, minOutput = 0, maxOutput = -1))
