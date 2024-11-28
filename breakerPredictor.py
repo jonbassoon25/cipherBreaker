@@ -63,6 +63,18 @@ def determineSFProbability(clfAnalysis, predictedChar, testChar):
 	
 	return round(freq1 / (freq2 + freq3), 4)
 	
+def determineWordProbability(clfAnalysis, predictedWord, testWord):
+	if not len(predictedWord) == len(testWord):
+		raise Exception("Length of predicted word and test word do not match.")
+	
+	probability = 1 #probability that the testWord is the correct word
+	for i in range(len(predictedWord)):
+		probability *= determineSFProbability(clfAnalysis, predictedWord[i], testWord[i]) #series of and = series of multiplication
+		
+		if probability == 0.0: #if the probability is 0, then stop
+			break
+	
+	return round(probability, 4)
 
 
 
@@ -79,17 +91,19 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.6):
 	Returns:
 		(dict): predicted words for ranges of characters in the output message
 	'''
+	print("Analyzing Model...")
 	analysis = modelAnalyzer.analyze(clf, trainingType, 5000, 0.0)
 
 	#can't split on space because space can be mistranslated as another char and another char can be mistranslated as space
 
+	print("Loading Words...")
 	allWords = []
-	with open("englishWords.txt", "r") as wordFile:
+	with open("words.txt", "r") as wordFile:
 		allWords = wordFile.readlines()
 		allWords = np.array([word.strip() for word in allWords])
 	
 	#sort from longest to shortest words and record indicies
-	wordDict = {}
+	wordDict = {0:[]}
 	for i in range(len(allWords)):
 		curWordLength = len(allWords[i])
 		if not curWordLength in wordDict.keys():
@@ -99,45 +113,77 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.6):
 			wordDict[curWordLength] = [i]
 		else:
 			wordDict[curWordLength].append(i)
-	#add each section of sorted indicies together
-	idx = []
-	for value in wordDict.values():
-		idx += value
-
-	#assign and reverse to get indexes from greatest to least size
-	idx = np.array(idx.reverse())
-
-	#sort allWords from greatest to least with the sorted indicies
-	allWords = allWords[idx]
+	#convert indicies in wordDict to actual values from allWords
+	for key in wordDict.keys():
+		for i in range(len(wordDict[key])):
+			wordDict[key][i] = allWords[wordDict[key][i]]
+		#delete keys without words in them and make all other keys np arrays
+		wordDict[key] = np.array(wordDict[key])
 	
-		
-
+	for i in range(len(wordDict.keys()) - 1, -1, -1):
+		if len(list(wordDict.values())[i]) == 0:
+			del wordDict[list(wordDict.keys())[i]]
 	
 	#steps for mistranslation predictions
 	'''
 	1) chunk based on output message
 	2) let chunk = start to start + length of the longest word in allWords or to end
-	2) determine probability that the chunk is one of the words with its length
-	3) determine probability that the chunk[:-1] is one of the words with its length all the way down to length 1
+	3) determine probability that the chunk is one of the words with its length
 	4) find last possible character that could be space in the chunk (character possibly able to translate to space)
 	5) repeat steps 3 - 4 with new chunk until no more possible words exist (words are seperated by space)
-	6) repeat steps 2 - 5 until end of output message
+	6) remove the smallest chunk from the output message and repeat steps 2 - 5 until end of output message
 	7) display results in a user friendly way
 	'''
 
 	#find longest word length
-	longestWordLength = 0
-	for word in allWords:
-		if len(word) > longestWordLength:
-			longestWordLength = len(word)
-	lwl = longestWordLength
+	lwl = list(wordDict.keys())[-1]
+
+	possibleWords = {}
 
 	#start chunking
+	print("Determining Possible Words...")
 	i = 0
-	finished = False
-	while not finished:
-		chunk = outputMessage[i:i+lwl]
+	while i < len(outputMessage):
+		if i + lwl < len(outputMessage):
+			chunk = outputMessage[i:i+lwl]
+		else:
+			chunk = outputMessage[i:]
+
+		#print(chunk)
+
+		#find possible space indicies
+		possibleSpaceIndicies = []
+		for j in range(len(chunk)):
+			if not determineSFProbability(analysis, chunk[j], " ") == 0.0:
+				possibleSpaceIndicies.append(j)
+		possibleSpaceIndicies.append(lwl) #include possible word from last space to the end of the chunk
+		possibleSpaceIndicies.reverse()
 		
+		#loop through each subchunk of the chunk
+		for possibleIndex in possibleSpaceIndicies:
+			subchunk = chunk[:possibleIndex]
+			#print(subchunk)
+			#calculate probability of each word of the length of the subchunk
+			if not len(subchunk) in wordDict.keys():
+				continue #no words of length subchunk
+			for word in wordDict[len(subchunk)]:
+				wordProbability = determineWordProbability(analysis, subchunk, word)
+				if wordProbability > 0.0: #word is possible
+					print(word, wordProbability)
+					chunkRange = f"{i}-{i + possibleIndex}"
+					#assign word to a range in possible words
+					if not chunkRange in possibleWords:
+						possibleWords[chunkRange] = [word, wordProbability]
+					else:
+						possibleWords[chunkRange].append([word, wordProbability])
+			#find next subchunk by continuing loop
+		#remove first subchunk from next iteration
+		print(possibleSpaceIndicies)
+		i += possibleSpaceIndicies[-1] + 1
+	
+	print(possibleWords)
+
+
 	
 
 
@@ -148,6 +194,8 @@ def predictUserInput():
 trainingType = "uncompressed"
 clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 
-analysis = modelAnalyzer.analyze(clf, trainingType, 5000)
+#analysis = modelAnalyzer.analyze(clf, trainingType, 5000)
 
-print(determineSFProbability(analysis, "a", "a"))
+#print(determineSFProbability(analysis, "a", "a"))
+
+predict(clf, "my hovercraft is full of eels", trainingType, cutoff = 0.6)
