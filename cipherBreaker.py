@@ -5,13 +5,41 @@ import cipher
 import dataFormatter
 
 def formatAsNumbers(encryptedChars):
+	'''
+	Formats the given encrypted chars as numbers of length 24
+
+	Parameters:
+		encryptedChars (npArray): array of encrypted characters
+	
+	Returns:
+		(npArray): array of encrypted characters with each character being a 24 digit number
+	'''
 	encryptedChars = dataFormatter.formatAsNumbers(encryptedChars).ravel()
 	return np.array([[int(num) for num in nums] for nums in encryptedChars])
 
 def formatAsCompressed(encryptedChars):
+	'''
+	Formats the given encrypted chars as arrays of ordinal numbers
+
+	Parameters:
+		encryptedChars (npArray): array of encrypted characters
+	
+	Returns:
+		(npArray): array of encrypted characters with each character being an array of length 32 of ordinal numbers representing each character of the encrypted character
+	'''
 	return dataFormatter.formatAsCompressed(encryptedChars)
 
 def score(actual, result):
+	'''
+	Scores the similarity of the result string against the actual string
+
+	Parameters:
+		actual (str): real string
+		result (str): predicted string
+	
+	Returns:
+		(float): similarity of the result string and the actual string to 3 decimal places
+	'''
 	correct = 0
 	for i in range(len(result)):
 		if i >= len(actual):
@@ -21,6 +49,17 @@ def score(actual, result):
 	return round(correct/len(actual), 3)
 
 def breakCipher(clf, encryptedMessage, type):
+	'''
+	Uses the provided classifier model to decrypt the encrypted message
+
+	Parameters:
+		clf (clf): trained decryption model
+		encryptedMessage (str): message to decrypt
+		type (str): data format that the classifier was trained on
+	
+	Returns:
+		(str): predicted decryption of message
+	'''
 	#get each character of the encrypted message on its own
 	encryptedChars = []
 	i = 0
@@ -46,10 +85,28 @@ def breakCipher(clf, encryptedMessage, type):
 	return result
 
 def encryptAndBreak(clf, message, type):
+	'''
+	Encryptes the given message and decrypts it with the given classifier
+
+	Parameters:
+		clf (clf): trained decryption model
+		message (str): message to encrypt
+		type (str): data format the classifier was trained on
+	
+	Returns:
+		(str): predicted decryption of the encryption of message
+	'''
 	encryptedMessage = cipher.to_cipher(message)
 	return breakCipher(clf, encryptedMessage, type)
 
 def decryptUserMessages(charClassifier, trainingType):
+	'''
+	Allows the user to input messages to encrypt and displays the encrypted message as well as the predicted decryption
+
+	Parameters:
+		charClassifier (clf): trained decryption model
+		trainingType (str): data format that the model was trained on
+	'''
 	while True:
 		messageToEncrypt = ""
 		while messageToEncrypt == "":
