@@ -3,6 +3,15 @@ import math
 import util
 
 def compareClassifierParameters(classifierName, params = [], against = "score", dataType = "all"):
+	'''
+	Graphs impact of different parameters across a constant classifier type
+
+	Parameters:
+		classifierName (str): classifier type to compare parameters of
+		params (list): list of strings of sections of parameters to compare
+		against (str): compare score or time
+		dataType (str): data type to compare
+	'''
 	classifierResults = util.loadTestResultDict(classifierName)
 
 	resultKeys = list(classifierResults.keys())
@@ -109,6 +118,15 @@ def compareClassifierParameters(classifierName, params = [], against = "score", 
 
 #classifer names passed in as ["DecisionTreeClassifier-gini,random", "GaussianNB-", "SVC-linear,1.0,3,scale"]
 def compareClassifiers(classifierNames = [], compare = "score", dataType = "all", dataFormat = "uncompressed"):
+	'''
+	Graphs different classifiers with specified parameters
+
+	Parameters:
+		classifierNames (list): passed in as ["DecisionTreeClassifier-gini,random", "GaussianNB-", "SVC-linear,1.0,3,scale"]
+		compare (str): compare score or time
+		dataType (str): data type of all classifiers
+		dataFormat (str): data format of all classifiers (uncompressed, compressed)
+	'''
 	allClassifierResults = util.loadAllTestResultDicts()
 	
 	#split classifierNames and be sure that they are recognized as real classifier names, delete and print message if they aren't
