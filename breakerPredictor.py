@@ -1,7 +1,6 @@
 import numpy as np
 import joblib
 
-import util
 import cipherBreaker
 import modelAnalyzer
 
@@ -65,7 +64,7 @@ def determineSFProbability(clfAnalysis, predictedChar, testChar):
 	
 def determineStringProbability(clfAnalysis, predictedString, testString):
 	if not len(predictedString) == len(testString):
-		raise Exception("Length of predicted string and test string do not match.")
+		return 0.0 #if predicted string and test string don't match length, testString cannot be correct
 	
 	probability = 1 #probability that the testWord is the correct word
 	for i in range(len(predictedString)):
@@ -74,11 +73,11 @@ def determineStringProbability(clfAnalysis, predictedString, testString):
 		if probability == 0.0: #if the probability is 0, then stop
 			break
 	
-	return round(probability, 4)
+	return probability
 
 
 
-def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOutput = -1):
+def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOutput = -1, includePredictedTextAsWords = False):
 	'''
 	Predicts mistranslations of the given output message from a clf
 
@@ -106,7 +105,7 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOu
 	allWords = []
 	with open("words.txt", "r") as wordFile:
 		allWords = wordFile.readlines()
-		allWords = np.array([word.strip() for word in allWords])
+		allWords = np.array([[word.strip().lower(), word.strip().upper(), word.strip().title()] for word in allWords]).ravel()
 	
 	#sort from longest to shortest words and record indicies
 	wordDict = {0:[]}
@@ -173,7 +172,7 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOu
 			if not len(subchunk) in wordDict.keys():
 				continue #no words of length subchunk
 			for word in wordDict[len(subchunk)]:
-				wordProbability = determineStringProbability(analysis, subchunk, word)
+				wordProbability = round(determineStringProbability(analysis, subchunk, word), 3) #round so that many words that will have a probabiliy of near 0 aren't included
 				if wordProbability > 0.0: #word is possible
 					#print(word, wordProbability)
 					#assign word to a range in possible words
@@ -186,18 +185,22 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOu
 		i += possibleSpaceIndicies[-1] + 1
 	
 	#each word of the output message is also a possible word (broken apart by spaces)
-	splitMessage = outputMessage.split(" ")
-	curLen = 0
-	for i in range(len(splitMessage)):
-		word = splitMessage[i]
+	if includePredictedTextAsWords:
+		splitMessage = outputMessage.split(" ")
+		curLen = 0
+		for i in range(len(splitMessage)):
+			word = splitMessage[i]
 
-		if not curLen in possibleWords:
-			possibleWords[curLen] = [word]
-		elif not word in possibleWords[curLen]: #don't add the word if it is already in the possible words
-			possibleWords[curLen].append(word)
-		curLen += len(word) + 1
+			if not curLen in possibleWords:
+				possibleWords[curLen] = [word]
+			elif not word in possibleWords[curLen]: #don't add the word if it is already in the possible words
+				possibleWords[curLen].append(word)
+			curLen += len(word) + 1
 
-	print("Determining Possible Messages...")
+	totalWords = 0
+	for key in possibleWords:
+		totalWords += len(possibleWords[key])
+	print(f"Determining Possible Messages from {totalWords} Possible Words...")
 	
 	possibleMessages = [possibleWords[0][i] + " " for i in range(len(possibleWords[0]))] #possible messages always start from beginning (index 0)
 	addingWords = True
@@ -219,10 +222,10 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOu
 	#remove space from end of all possible messages
 	possibleMessages = [message[:-1] for message in possibleMessages]
 
-	#score possible messages
-	possibleMessageScores = [determineStringProbability(analysis, possibleMessages[i], outputMessage) for i in range(len(possibleMessages))]
+	print("Scoring and Sorting Possible Messages...")
 
-	print(possibleMessageScores)
+	#score possible messages
+	possibleMessageScores = [determineStringProbability(analysis, outputMessage, possibleMessages[i]) for i in range(len(possibleMessages))]
 
 	#sort scores and messages from highest to lowest
 	idx = [i for i in range(len(possibleMessages))]
@@ -261,20 +264,67 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOu
 
 	return possibleMessages, possibleMessageScores
 
+def writePredictionFile(originalMessage, possibleMessages, possibleMessageScores, targetFilePath = "./textPrediction.txt"):
+	print(f"Writing Predictions to {targetFilePath}")
+	if not len(possibleMessages) == len(possibleMessageScores):
+		raise Warning("Length of possible messages is not the same as length of possible scores")
+	textToWrite = ""
+	textToWrite += f"Breaker Output:\n\t{originalMessage}\n\n"
+	textToWrite += f"Possible Messages:\n"
+	for i in range(len(possibleMessages)):
+		textToWrite += f"\t{possibleMessages[i]}\n\tConfidence: {possibleMessageScores[i]}\n"
+	
+	with open(targetFilePath, "w") as targetFile:
+		targetFile.write(textToWrite)
 
 
 
+def predictUserInput(charClassifier, trainingType, includePredictedTextAsWords = False):
+	#get message to encrypt
+	messageToEncrypt = ""
+	while messageToEncrypt == "":
+		messageToEncrypt = input("Enter a message to encrypt:\n\t")
+		
+	#get probability cutoff value
+	cutoff = -1
+	while cutoff < 0 or cutoff > 1:
+		try:
+			cutoff = float(input("Probability cutoff: "))
+		except:
+			print("Invalid Input. Enter a number between 0.0 and 1.0")
+		if cutoff < 0 or cutoff > 1:
+			print("Invalid Input. Enter a number between 0.0 and 1.0")
+		
+	#get min output
+	minOutput = -1
+	while minOutput < 0:
+		try:
+			minOutput = int(input("Minimum Outputs: "))
+		except:
+			print("Invalid Input. Enter a positive integer.")
+		if minOutput < 0:
+			print("Invalid Input. Enter a positive integer.")
 
-def predictUserInput():
-	pass
+	#get max output
+	maxOutput = 0
+	while maxOutput == 0:
+		try:
+			maxOutput = int(input("Maximum Outputs (value of -1 = infinity): "))
+		except:
+			print("Invalid Input. Enter a positive integer or -1.")
+		if maxOutput <= 0 and not maxOutput == -1:
+			print("Invalid Input. Enter a positive integer or -1.")
 
-trainingType = "uncompressed"
+	result = cipherBreaker.encryptAndBreak(charClassifier, messageToEncrypt, trainingType)
+	print("Decrypted Message:\n\t" + result + "\n")
+
+	pm, pms = predict(clf, result, trainingType, cutoff, minOutput, maxOutput, includePredictedTextAsWords)
+	writePredictionFile(result, pm, pms)
+
+
+trainingType = "compressed"
 print("Loading Model...")
-clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
+clf = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
+#clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 
-#analysis = modelAnalyzer.analyze(clf, trainingType, 5000)
-
-#print(determineSFProbability(analysis, "a", "a"))
-
-#print(predict(clf, "my hovercrNft is full of eels", trainingType, 0.4, 2, -1))
-print(predict(clf, "aNsh equilibrium is Nmazing", trainingType, cutoff = 0.0, minOutput = 0, maxOutput = -1))
+predictUserInput(clf, trainingType, includePredictedTextAsWords = False)

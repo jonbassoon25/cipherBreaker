@@ -107,7 +107,6 @@ trainingType = "uncompressed"
 #charClassifier = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
 charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 
-analysis = analyze(charClassifier, trainingType, numTests)
+analysis = analyze(charClassifier, trainingType, numTests, 0.0)
 plotAnalysis(analysis)
 """
-

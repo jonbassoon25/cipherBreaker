@@ -64,6 +64,6 @@ def decryptUserMessages(charClassifier, trainingType):
 '''
 trainingType = "uncompressed"
 #charClassifier = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
+charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-1.pkl")
 decryptUserMessages(charClassifier, trainingType)
 '''
