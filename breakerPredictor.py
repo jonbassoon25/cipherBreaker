@@ -270,6 +270,15 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOu
 	return possibleMessages, possibleMessageScores
 
 def writePredictionFile(originalMessage, possibleMessages, possibleMessageScores, targetFilePath = "./textPrediction.txt"):
+	'''
+	Writes predictions to a readable text file
+
+	Parameters:
+		originalMessage (str): predicted decryption from a trained decryption model
+		possibleMessages (list): list of all possible messages given the predicted message and decryption model analysis
+		possibleMessageScores (list): scores for each of the possible messages
+		targetFilePath (str): path of the file to write to / create
+	'''
 	print(f"Writing Predictions to {targetFilePath}")
 	if not len(possibleMessages) == len(possibleMessageScores):
 		raise Warning("Length of possible messages is not the same as length of possible scores")
@@ -285,6 +294,14 @@ def writePredictionFile(originalMessage, possibleMessages, possibleMessageScores
 
 
 def predictUserInput(charClassifier, trainingType, includePredictedTextAsWords = False):
+	'''
+	Allows the user to input messages to encrypt, decryptes them using the provided decryption model, predicts possible messages based on its output an analysis, and then writes the results to a text file.
+
+	Parameters:
+		charClassifier (clf): trained decryption model
+		trainingType (str): data format that the decryption model was trained on
+		includePredictedTextAsWords (bool): should the predicted words be considered valid words when predicting possible messages
+	'''
 	#get message to encrypt
 	messageToEncrypt = ""
 	while messageToEncrypt == "":
