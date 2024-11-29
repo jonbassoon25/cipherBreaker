@@ -9,6 +9,18 @@ import cipherBreaker
 #analizes the current cipher breaker model and produces a series of pie charts that show what results it produces for each input
 
 def analyze(clf, trainingType, numTests, cutoff = 0.05):
+	'''
+	Analizes the given decryption model and returns its analysis
+
+	Parameters:
+		clf (clf): trained decryption model
+		trainingType (str): data format that the model was trained on
+		numTests (int): number of test characters per supported character in analysis
+		cutoff (float): cipher outputs below this threshold are added under the 'other' category
+
+	Returns:
+		(dict): analysis of what this model returns given each supported character of the cipher
+	'''
 	analysis = {}
 	testingLetters = cipher.abc + cipher.ABC + cipher.str_num + cipher.sym
 	for letter in testingLetters:
@@ -45,6 +57,12 @@ def analyze(clf, trainingType, numTests, cutoff = 0.05):
 	return analysis
 
 def plotAnalysis(analysis):
+	'''
+	Produces a series of pie charts that show what results the analized model outputs for each input
+
+	Parameters:
+		analysis (dict): analysis of what a model returns given each supported character of the cipher
+	'''
 	#analysis should have keys = cipher.abc + cipher.ABC + cipher.str_num + cipher.sym
 
 	#abc-lor
