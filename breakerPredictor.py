@@ -76,7 +76,7 @@ def determineStringProbability(clfAnalysis, predictedString, testString):
 	return probability
 
 
-
+#cannot predict most words that are followed by punctuation
 def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOutput = -1, includePredictedTextAsWords = False):
 	'''
 	Predicts mistranslations of the given output message from a clf
