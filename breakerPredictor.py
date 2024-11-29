@@ -224,6 +224,9 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOu
 
 	print("Scoring and Sorting Possible Messages...")
 
+	#remove duplicates in possible messages
+	possibleMessages = list(dict.fromkeys(possibleMessages))
+
 	#score possible messages
 	possibleMessageScores = [determineStringProbability(analysis, outputMessage, possibleMessages[i]) for i in range(len(possibleMessages))]
 
@@ -246,6 +249,8 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOu
 
 	possibleMessages = np.array(possibleMessages)[idx]
 	possibleMessageScores = np.array(possibleMessageScores)[idx]
+
+	#remove duplicate messages
 
 	#filter scores less than the cutoff
 	for i in range(len(possibleMessageScores) - 1, -1, -1):
@@ -322,9 +327,9 @@ def predictUserInput(charClassifier, trainingType, includePredictedTextAsWords =
 	writePredictionFile(result, pm, pms)
 
 
-trainingType = "compressed"
+trainingType = "uncompressed"
 print("Loading Model...")
-clf = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-#clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
+#clf = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
+clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 
-predictUserInput(clf, trainingType, includePredictedTextAsWords = False)
+predictUserInput(clf, trainingType, includePredictedTextAsWords = True)
