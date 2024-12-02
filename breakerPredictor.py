@@ -11,8 +11,8 @@ def determineSFProbability(clfAnalysis, predictedChar, testChar):
 
 	Parameters:
 		clfAnalysis (dict): dictionary of analysis of relative frequencys of outputs for each input to the clf
-		clfPrediction (str): character returned by the classifier model. Has to be an output of the classifier model
-		testWord (str): possible correct response. Has to be an output of the classifier model
+		predictedChar (str): character returned by the classifier model. Has to be an output of the classifier model
+		testChar (str): possible correct response. Has to be an output of the classifier model
 	
 	Returns:
 		(float): probability that the test character is correct
@@ -75,6 +75,36 @@ def determineStringProbability(clfAnalysis, predictedString, testString):
 	
 	return probability
 
+def determinizeString(clfAnalysis, predictedString):
+	'''
+	Creates every possible variation of message that could have generated the predicted string
+
+	Parameters:
+		clfAnalysis (dict): dictionary of analysis of relative frequencys of outputs for each input to the clf
+		predictedString (str): prediction of the clf model
+	
+	Returns:
+		(npArray): array of possible messages
+		(npArray): array of possible message scores
+	'''
+
+	possibleChars = list(clfAnalysis.keys())
+
+	possibleMessages = []
+	possibleMessageScores = []
+
+	rep = 0
+	finished = False
+	for i in range(len(predictedString) ** len(possibleChars)): #total variations of predicted string
+		#build test string
+		testString = possibleChars[0] * len(predictedString)
+		for j in range(len(predictedString)):
+			if i // len(possibleChars) ** j < 1:
+				#no more changes to the string for this or past this
+				break
+			testString[j] = 0
+		
+
 
 #cannot predict most words that are followed by punctuation
 def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOutput = -1, includePredictedTextAsWords = False):
@@ -90,7 +120,8 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOu
 		maxOutput (int): maximum number of predicted messages to output, overrides probability cutoff (ignored if -1)
 	
 	Returns:
-		(dict): predicted words for ranges of characters in the output message
+		(npArray): array of possible messages
+		(npArray): array of possible message scores
 	'''
 	if minOutput > maxOutput and not maxOutput == -1:
 		raise Warning(f"Maximum output of {maxOutput} less than minimum output of {minOutput}. Setting maximum output to minimum output.")
@@ -185,17 +216,15 @@ def predict(clf, outputMessage, trainingType, cutoff = 0.4, minOutput = 0, maxOu
 		i += possibleSpaceIndicies[-1] + 1
 	
 	#each word of the output message is also a possible word (broken apart by spaces)
-	if includePredictedTextAsWords:
-		splitMessage = outputMessage.split(" ")
-		curLen = 0
-		for i in range(len(splitMessage)):
-			word = splitMessage[i]
-
-			if not curLen in possibleWords:
-				possibleWords[curLen] = [word]
-			elif not word in possibleWords[curLen]: #don't add the word if it is already in the possible words
-				possibleWords[curLen].append(word)
-			curLen += len(word) + 1
+	splitMessage = outputMessage.split(" ")
+	curLen = 0
+	for i in range(len(splitMessage)):
+		word = splitMessage[i]
+		if not curLen in possibleWords:
+			possibleWords[curLen] = [word] #still add predicted word if it needs to be there for translation purposes
+		elif not word in possibleWords[curLen] and includePredictedTextAsWords: #don't add the word if it is already in the possible words or if predicted words should not be included
+			possibleWords[curLen].append(word)
+		curLen += len(word) + 1
 
 	totalWords = 0
 	for key in possibleWords:
@@ -349,4 +378,4 @@ print("Loading Model...")
 #clf = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
 clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 
-predictUserInput(clf, trainingType, includePredictedTextAsWords = True)
+predictUserInput(clf, trainingType, includePredictedTextAsWords = False) #third option has to be true if orignal text contains non-words or unknown words
