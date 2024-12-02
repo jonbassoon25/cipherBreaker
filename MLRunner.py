@@ -1,12 +1,6 @@
 import json
 import time
 import numpy as np
-from sklearn.neighbors import NearestCentroid, KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB, MultinomialNB
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
-from sklearn.neural_network import MLPClassifier
 
 import util
 import dataCreator
@@ -194,68 +188,3 @@ def multiRun(trainingDataToLetterRatios, clf, params, trainingReps = 1, dataForm
 
 			print("Saving Run")
 			saveRun(name, f"{dtype}-{dataFormat}-{params}", score, trainingTime, currentTDTLR)
-
-
-#yTrain, xTrain, yTest, xTest = loadData("all")
-
-#runML(xTrain, yTrain, xTest, yTest, NearestCentroid("euclidean"))
-#runML(xTrain, yTrain, xTest, yTest, KNeighborsClassifier(n_neighbors=3, weights = "uniform"))
-#runML(xTrain, yTrain, xTest, yTest, GaussianNB())
-#runML(xTrain, yTrain, xTest, yTest, DecisionTreeClassifier(criterion="gini", splitter="best"))
-#runML(xTrain, yTrain, xTest, yTest, RandomForestClassifier(n_estimators=5))
-#runML(xTrain, yTrain, xTest, yTest, SVC(kernel="linear", C=1.0, degree = 3, gamma = "scale"))
-
-#max run size < 1048576 before zsh: killed error. Not enough RAM
-#multiRun(runs, clf(), "", 1, "compressed")
-'''
-#short run range (2^6 - 2^11)
-
-runs = [2 ** i for i in range(6, 12)]
-multiRun([64], DecisionTreeClassifier(criterion="gini", splitter="best"), "gini,best", 1, "compressed")
-#multiRun(runs, MLPClassifier(hidden_layer_sizes=(32, 24), activation="relu", solver='lbfgs', alpha=1e-5, max_iter=10000), "(32,24),relu,lbfgs,1e-5,10000", 1, "compressed")
-#multiRun(runs, MLPClassifier(hidden_layer_sizes=(100, 100), activation="relu", solver='lbfgs', alpha=1e-5, max_iter=10000), "(100, 100),relu,lbfgs,1e-5,10000", 1, "compressed")
-#multiRun(runs, MLPClassifier(hidden_layer_sizes=(192, 140, 100), activation="relu", solver='lbfgs', alpha=1e-5, max_iter=1000000), "(192, 140, 100),relu,lbfgs,1e-5,1000000", 1, "compressed")
-
-'''
-
-'''
-#medium run range (2^12 - 2^17)
-runs = [2 ** i for i in range(12, 18)]
-
-
-'''
-
-#'''
-#log run range (2^18 - 2^20)
-runs = [2 ** i for i in range(18, 20)]
-multiRun(runs[1:], DecisionTreeClassifier(criterion="gini", splitter="best"), "gini,best", 1, "compressed")
-multiRun(runs, DecisionTreeClassifier(criterion="entropy", splitter="best"), "entropy,best", 1, "compressed")
-multiRun(runs, DecisionTreeClassifier(criterion="log_loss", splitter="best"), "log_loss,best", 1, "compressed")
-
-multiRun(runs, DecisionTreeClassifier(criterion="gini", splitter="random"), "gini,random", 1, "compressed")
-multiRun(runs, DecisionTreeClassifier(criterion="entropy", splitter="random"), "entropy,random", 1, "compressed")
-multiRun(runs, DecisionTreeClassifier(criterion="log_loss", splitter="random"), "log_loss,random", 1, "compressed")
-
-runs = [2 ** i for i in range(6, 10)]
-multiRun(runs[2:], SVC(kernel="linear", C=1.0, degree = 3, gamma = "scale"), "linear,1.0,3,scale", 1, "compressed")
-multiRun(runs, SVC(kernel="rbf", C=1.0, degree = 3, gamma = "scale"), "rbf,1.0,3,scale", 1, "compressed")
-multiRun(runs, SVC(kernel="sigmoid", C=1.0, degree = 3, gamma = "scale"), "sigmoid,1.0,3,scale", 1, "compressed")
-multiRun(runs, SVC(kernel="poly", C=1.0, degree = 3, gamma = "scale"), "poly,1.0,3,scale", 1, "compressed")
-#'''
-
-#'''
-#exceptions / long run time sets
-
-#estimated 20hrs per
-runs = [2 ** i for i in range(12, 15)] #up to 16384:1
-multiRun(runs, SVC(kernel="rbf", C=1.0, degree = 3, gamma = "scale"), "rbf,1.0,3,scale", trainingReps = 1, dataFormat = "uncompressed", dtype = "all")
-multiRun(runs, SVC(kernel="sigmoid", C=1.0, degree = 3, gamma = "scale"), "sigmoid,1.0,3,scale", trainingReps = 1, dataFormat = "uncompressed", dtype = "all")
-multiRun(runs, SVC(kernel="poly", C=1.0, degree = 3, gamma = "scale"), "poly,1.0,3,scale", trainingReps = 1, dataFormat = "uncompressed", dtype = "all")
-
-#estimated 43hrs per
-runs = [2 ** i for i in range(10, 12)] #up to 2048:1
-multiRun(runs[1:], SVC(kernel="linear", C=1.0, degree = 3, gamma = "scale"), "linear,1.0,3,scale", 1, "compressed")
-multiRun(runs, SVC(kernel="rbf", C=1.0, degree = 3, gamma = "scale"), "rbf,1.0,3,scale", 1, "compressed")
-multiRun(runs, SVC(kernel="sigmoid", C=1.0, degree = 3, gamma = "scale"), "sigmoid,1.0,3,scale", 1, "compressed")
-multiRun(runs, SVC(kernel="poly", C=1.0, degree = 3, gamma = "scale"), "poly,1.0,3,scale", 1, "compressed")
-#'''

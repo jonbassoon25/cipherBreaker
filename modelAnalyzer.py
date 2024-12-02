@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import joblib
 
 import cipher
 import util
@@ -114,17 +113,3 @@ def plotAnalysis(analysis):
 
 
 	plt.show()
-
-
-
-
-			
-"""
-numTests = 5000 #number of times each character is tested for accuracy
-trainingType = "uncompressed"
-#charClassifier = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
-
-analysis = analyze(charClassifier, trainingType, numTests, 0.0)
-plotAnalysis(analysis)
-"""

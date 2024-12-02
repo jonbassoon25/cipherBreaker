@@ -1,5 +1,4 @@
 import numpy as np
-import joblib
 
 import cipherBreaker
 import modelAnalyzer
@@ -369,13 +368,5 @@ def predictUserInput(charClassifier, trainingType, includePredictedTextAsWords =
 	result = cipherBreaker.encryptAndBreak(charClassifier, messageToEncrypt, trainingType)
 	print("Decrypted Message:\n\t" + result + "\n")
 
-	pm, pms = predict(clf, result, trainingType, cutoff, minOutput, maxOutput, includePredictedTextAsWords)
+	pm, pms = predict(charClassifier, result, trainingType, cutoff, minOutput, maxOutput, includePredictedTextAsWords)
 	writePredictionFile(result, pm, pms)
-
-
-trainingType = "uncompressed"
-print("Loading Model...")
-#clf = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
-
-predictUserInput(clf, trainingType, includePredictedTextAsWords = False) #third option has to be true if orignal text contains non-words or unknown words

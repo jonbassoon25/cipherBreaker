@@ -1,5 +1,4 @@
 import numpy as np
-import joblib
 
 import cipher
 import dataFormatter
@@ -117,10 +116,3 @@ def decryptUserMessages(charClassifier, trainingType):
 		print("Decrypted Message:\n\t" + result)
 		print("Decryption Score: " + str(score(messageToEncrypt, result)))
 		print("\n")
-
-'''
-trainingType = "uncompressed"
-#charClassifier = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-1.pkl")
-decryptUserMessages(charClassifier, trainingType)
-'''
