@@ -121,11 +121,11 @@ modelAnalyzer.plotAnalysis(analysis)
 
 #/------------------------------------------------------------------------------------------------/
 #Breaker Predictor
-'''
+#'''
 trainingType = "uncompressed"
 print("Loading Model...")
 #clf = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
 clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 
-predictUserInput(clf, trainingType, includePredictedTextAsWords = False) #third option has to be true if orignal text contains non-words or unknown words
-'''
+breakerPredictor.predictUserInput(clf, trainingType, includePredictedTextAsWords = False) #third option has to be true if orignal text contains non-words or unknown words
+#'''
