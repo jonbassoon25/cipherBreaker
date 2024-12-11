@@ -9,3 +9,4 @@ __pycache__/*
 .gitattributes
 *.txt
 pyvenv.cfg
+.DS_Store
