@@ -33,7 +33,7 @@ import breakerPredictor
 #short run range (2^6 - 2^11)
 
 runs = [2 ** i for i in range(6, 12)]
-#MLRunner.multiRun([64], DecisionTreeClassifier(criterion="gini", splitter="best"), "gini,best", 1, "compressed")
+MLRunner.multiRun([64], DecisionTreeClassifier(criterion="gini", splitter="best"), "gini,best", 1, "compressed")
 #multiRun(runs, MLPClassifier(hidden_layer_sizes=(32, 24), activation="relu", solver='lbfgs', alpha=1e-5, max_iter=10000), "(32,24),relu,lbfgs,1e-5,10000", 1, "compressed")
 #multiRun(runs, MLPClassifier(hidden_layer_sizes=(100, 100), activation="relu", solver='lbfgs', alpha=1e-5, max_iter=10000), "(100, 100),relu,lbfgs,1e-5,10000", 1, "compressed")
 #multiRun(runs, MLPClassifier(hidden_layer_sizes=(192, 140, 100), activation="relu", solver='lbfgs', alpha=1e-5, max_iter=1000000), "(192, 140, 100),relu,lbfgs,1e-5,1000000", 1, "compressed")
@@ -76,7 +76,7 @@ MLRunner.multiRun(runs, SVC(kernel="poly", C=1.0, degree = 3, gamma = "scale"), 
 #/------------------------------------------------------------------------------------------------/
 #Result Analysis
 '''
-#resultAnalysis.compareClassifierParameters("DecisionTreeClassifier", [], "score", "all")
+resultAnalysis.compareClassifierParameters("DecisionTreeClassifier", [], "score", "all")
 #resultAnalysis.compareClassifierParameters("GaussianNB", [], "score", "all")
 #resultAnalysis.compareClassifierParameters("KNeighborsClassifier", ["distance"], "score", "all")
 #resultAnalysis.compareClassifierParameters("NearestCentroid", [], "score", "all")
@@ -89,7 +89,7 @@ MLRunner.multiRun(runs, SVC(kernel="poly", C=1.0, degree = 3, gamma = "scale"), 
 #/------------------------------------------------------------------------------------------------/
 #Cipher Breaker Trainer
 '''
-trainingDataToLetterRatio = 131072
+trainingDataToLetterRatio = 256
 
 clf, name, score, trainingTime = cipherBreakerTrainer.trainClf(DecisionTreeClassifier(criterion="gini", splitter="best"), trainingDataToLetterRatio, 0.05, "compressed", "all")
 
@@ -103,7 +103,7 @@ with open("./CCCs/cipherClassifierDescription.txt", "w") as CCDFile:
 '''
 trainingType = "uncompressed"
 #charClassifier = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-1.pkl")
+charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 cipherBreaker.decryptUserMessages(charClassifier, trainingType)
 '''
 
@@ -113,7 +113,7 @@ cipherBreaker.decryptUserMessages(charClassifier, trainingType)
 numTests = 5000 #number of times each character is tested for accuracy
 trainingType = "uncompressed"
 #charClassifier = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
+charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-1.pkl")
 
 analysis = modelAnalyzer.analyze(charClassifier, trainingType, numTests, 0.0)
 modelAnalyzer.plotAnalysis(analysis)

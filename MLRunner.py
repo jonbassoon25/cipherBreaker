@@ -178,10 +178,10 @@ def multiRun(trainingDataToLetterRatios, clf, params, trainingReps = 1, dataForm
 		currentTDTLR = trainingDataToLetterRatios[i]
 		for k in range(trainingReps):
 			print(f"\nCreating data with TD:L of {currentTDTLR}:1")
-			dataCreator.createData(round(currentTDTLR * (1 + testingPercent)), dtype=dtype)
+			dataCreator.createData(round(currentTDTLR * (1 + testingPercent)), dtype=dtype) #quantity
 
 			#calculation to find testing percent to make currentTDTLR for training data instead of for testing data
-			createData(((currentTDTLR * (1 + testingPercent) - currentTDTLR) / currentTDTLR), dataFormat, dtype)
+			createData(((currentTDTLR * (1 + testingPercent) - currentTDTLR) / currentTDTLR), dataFormat, dtype) #testing percent
 		
 			yTrain, xTrain, yTest, xTest = loadData(dtype)
 			trash, name, score, trainingTime = runML(xTrain, yTrain, xTest, yTest, clf)
