@@ -33,11 +33,11 @@ import breakerPredictor
 #short run range (2^6 - 2^11)
 
 runs = [2 ** i for i in range(6, 12)]
-MLRunner.multiRun([64], DecisionTreeClassifier(criterion="gini", splitter="best"), "gini,best", 1, "compressed")
+MLRunner.multiRun([1024], DecisionTreeClassifier(criterion="gini", splitter="best"), "gini,best", 1, "compressed")
 #multiRun(runs, MLPClassifier(hidden_layer_sizes=(32, 24), activation="relu", solver='lbfgs', alpha=1e-5, max_iter=10000), "(32,24),relu,lbfgs,1e-5,10000", 1, "compressed")
 #multiRun(runs, MLPClassifier(hidden_layer_sizes=(100, 100), activation="relu", solver='lbfgs', alpha=1e-5, max_iter=10000), "(100, 100),relu,lbfgs,1e-5,10000", 1, "compressed")
 #multiRun(runs, MLPClassifier(hidden_layer_sizes=(192, 140, 100), activation="relu", solver='lbfgs', alpha=1e-5, max_iter=1000000), "(192, 140, 100),relu,lbfgs,1e-5,1000000", 1, "compressed")
-
+quit()
 #medium run range (2^12 - 2^17)
 runs = [2 ** i for i in range(12, 18)]
 
@@ -75,21 +75,21 @@ MLRunner.multiRun(runs, SVC(kernel="poly", C=1.0, degree = 3, gamma = "scale"), 
 '''
 #/------------------------------------------------------------------------------------------------/
 #Result Analysis
-'''
-resultAnalysis.compareClassifierParameters("DecisionTreeClassifier", [], "score", "all")
-#resultAnalysis.compareClassifierParameters("GaussianNB", [], "score", "all")
-#resultAnalysis.compareClassifierParameters("KNeighborsClassifier", ["distance"], "score", "all")
-#resultAnalysis.compareClassifierParameters("NearestCentroid", [], "score", "all")
-#resultAnalysis.compareClassifierParameters("RandomForestClassifier", [], "score", "all")
-#resultAnalysis.compareClassifierParameters("SVC", [], "time", "all")
+#'''
+#resultAnalysis.compareClassifierParameters("DecisionTreeClassifier", ["uncompressed"], "score", "all")
+#resultAnalysis.compareClassifierParameters("GaussianNB", ["uncompressed"], "score", "all")
+#resultAnalysis.compareClassifierParameters("KNeighborsClassifier", ["uncompressed"], "score", "all")
+#resultAnalysis.compareClassifierParameters("NearestCentroid", ["uncompressed"], "score", "all")
+#resultAnalysis.compareClassifierParameters("RandomForestClassifier", ["uncompressed"], "score", "all")
+#resultAnalysis.compareClassifierParameters("SVC", ["uncompressed"], "score", "all")
 
-#resultAnalysis.compareClassifiers(["DecisionTreeClassifier-entropy,random", "SVC-linear,1.0,3,scale"], "score", "all", "compressed")
-'''
+#resultAnalysis.compareClassifiers(["DecisionTreeClassifier-entropy,random", "SVC-linear,1.0,3,scale"], "time", "all", "compressed")
+#'''
 
 #/------------------------------------------------------------------------------------------------/
 #Cipher Breaker Trainer
 '''
-trainingDataToLetterRatio = 256
+trainingDataToLetterRatio = 131072 * 2
 
 clf, name, score, trainingTime = cipherBreakerTrainer.trainClf(DecisionTreeClassifier(criterion="gini", splitter="best"), trainingDataToLetterRatio, 0.05, "compressed", "all")
 
@@ -113,19 +113,19 @@ cipherBreaker.decryptUserMessages(charClassifier, trainingType)
 numTests = 5000 #number of times each character is tested for accuracy
 trainingType = "uncompressed"
 #charClassifier = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-1.pkl")
+charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
 
 analysis = modelAnalyzer.analyze(charClassifier, trainingType, numTests, 0.0)
 modelAnalyzer.plotAnalysis(analysis)
 '''
 
 #/------------------------------------------------------------------------------------------------/
-#Breaker Predictor
-#'''
+#Breaker Predictor -- This one is out of date, use the Universal Cipher Breaker Breaker Predictor with ciphers.customCipher() or ciphers.uncompressedCustomCipher() as the encryptor
+'''
 trainingType = "uncompressed"
 print("Loading Model...")
 #clf = joblib.load("./CCCs/cipherCharacterClassifier.pkl")
-clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-3.pkl")
+clf = charClassifier = joblib.load(f"./CCCs/saved/{trainingType}/clf-2.pkl")
 
 breakerPredictor.predictUserInput(clf, trainingType, includePredictedTextAsWords = False) #third option has to be true if orignal text contains non-words or unknown words
-#'''
+'''

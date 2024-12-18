@@ -10,3 +10,4 @@ __pycache__/*
 *.txt
 pyvenv.cfg
 .DS_Store
+main_example1.py
